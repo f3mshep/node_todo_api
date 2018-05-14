@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { ObjectID } = require("mongodb");
 
 const {mongoose} = require('./db/mongo');
 const {Todo} = require('./models/todo');
@@ -15,10 +16,8 @@ app.post('/todos', (req, res) => {
     text: req.body.text
   })
   todo.save().then((doc)=>{
-    console.log("Document created:\n", doc)
     res.send(doc);
   }, (e)=>{
-    console.log("Bad request:\n", e)
     res.status(400).send(e)
   })
 });
@@ -30,6 +29,18 @@ app.get('/todos', (req, res) => {
     }, error => {
       res.status(400).send({error})
     })
+});
+
+app.get('/todos/:id', (req, res) => {
+  let id = req.params.id;
+  if (!ObjectID.isValid(id)) return res.status(400).send({error: "Invalid Id"})
+  Todo.findById(id)
+    .then(todo => {
+      if (!todo) return res.status(404).send({error: "Object not found"})
+      res.send({todo})
+    }, error => {
+      res.send({error})
+    });
 });
 
 app.listen(PORT, () => {
