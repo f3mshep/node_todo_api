@@ -83,6 +83,7 @@ describe("GET /todos/:id", () => {
   it('should return an error if the ID is invalid', (done)=> {
     request(app)
       .get(`/todos/bad_id`)
+      .expect(400)
       .expect((res) =>{
         expect(res.body.error).toBe("Invalid Id");
       })
@@ -91,6 +92,7 @@ describe("GET /todos/:id", () => {
   it('should return an error if the document cannot be found', (done)=> {
     request(app)
       .get(`/todos/${badValidTestId}`)
+      .expect(404)
       .expect((res)=> {
         expect(res.body.error).toBe("Object not found");
       })

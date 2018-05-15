@@ -7,7 +7,7 @@ const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 
 const app = express();
-PORT = 3000
+PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
