@@ -99,3 +99,33 @@ describe("GET /todos/:id", () => {
       .end(done);
   })
 });
+
+describe("DELETE /todos/:id", () => {
+  it("should delete the todo from the database and return doc", (done)=>{
+    request(app)
+      .delete(`/todos/${validTestId}`)
+      .expect(200)
+      .expect((res)=> {
+        expect(res.body.todo._id).toBe(validTestId)
+      })
+      .expect((res) => {
+        Todo.findById(validTestId)
+        .then((todo)=>{
+          expect(todo == false)
+        })
+      })
+      .end(done)
+  });
+  it("should return a 400 if invalid ID", (done)=>{
+    request(app)
+      .delete(`/todos/bad_id`)
+      .expect(400)
+      .end(done)
+  });
+  it("should return a 404 if the document is not found", (done)=>{
+    request(app)
+      .delete(`/todos/${badValidTestId}`)
+      .expect(404)
+      .end(done)
+  });
+});
