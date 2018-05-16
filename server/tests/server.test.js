@@ -100,6 +100,33 @@ describe("GET /todos/:id", () => {
   })
 });
 
+describe("PATCH /todos/:id", () => {
+  it("should return the updated todo", (done)=>{
+    request(app)
+      .patch(`/todos/${validTestId}`)
+      .send({ text: "updated third test", completed: true })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe("updated third test");
+      })
+      .end(done);
+  });
+  it("should not update prohibited fields", (done)=>{
+    request(app)
+      .patch(`/todos/${validTestId}`)
+      .send({ text: "updated third test", _id: 123, completed: "haha" })
+      .expect(200)
+      .expect((res) => {
+        Todo.findById(validTestId)
+          .then((todo) => {
+            expect(todo.completed).toBe(true);
+            expect(todo._id).toBe(validTestId);
+          }, err => console.log(err))
+      })
+      .end(done);
+  });
+});
+
 describe("DELETE /todos/:id", () => {
   it("should delete the todo from the database and return doc", (done)=>{
     request(app)
@@ -108,13 +135,14 @@ describe("DELETE /todos/:id", () => {
       .expect((res)=> {
         expect(res.body.todo._id).toBe(validTestId)
       })
-      .expect((res) => {
+      .end((err, res)=> {
+        if (err) return done(err);
         Todo.findById(validTestId)
-        .then((todo)=>{
-          expect(todo == false)
-        })
-      })
-      .end(done)
+          .then((todo) => {
+            expect(todo).toNotExist()
+            done();
+        }).catch(e => done(e));
+      });
   });
   it("should return a 400 if invalid ID", (done)=>{
     request(app)
