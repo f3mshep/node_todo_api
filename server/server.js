@@ -14,6 +14,7 @@ PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+// Todos
 app.post('/todos', (req, res) => {
   let todo = new Todo({
     text: req.body.text
@@ -81,6 +82,19 @@ app.patch(`/todos/:id`, (req, res) => {
     .catch((error)=>{
       return res.status(400).send({error})
     })
+});
+
+//User
+
+app.post('/users', (req, res)=>{
+  let body = _.pick(req.body, ['email', 'password'])
+  let newUser = new User(body);
+  newUser.save().then(()=>{
+      return newUser.generateAuthToken();
+    })
+    .then((token)=> {
+      return res.header('x-auth', token).send(newUser);
+    }).catch((error) => res.status(400).send({error}));
 });
 
 app.listen(PORT, () => {
