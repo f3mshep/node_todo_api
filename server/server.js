@@ -104,6 +104,18 @@ app.get('/users/me',authenticate, (req, res) => {
   res.send(req.user);
 });
 
+app.post('/users/login', authenticate, (req, res)=>{
+  let user = _.pick(req.body, ['email', 'password'])
+  User.findOne(user)
+    .then(doc => {
+      if (!doc) return res.status(404).send({ error: "Object not found" })
+      return res.send(doc.tokens[0].token)
+    })
+    .catch(err => res.status(400).send({err}))
+});
+
+//port config
+
 app.listen(PORT, () => {
   console.log(`Started on port ${PORT}`)
 });

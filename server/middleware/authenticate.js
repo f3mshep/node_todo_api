@@ -7,7 +7,7 @@ const authenticate = (req, res, next) => {
       if (!user) {
         return Promise.reject();
       }
-      console.log(user);
+
       req.user = user;
       req.token = token;
       next();

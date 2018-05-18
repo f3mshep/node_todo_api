@@ -3,13 +3,13 @@ const request = require('supertest');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
-const {todos, populateTodos, validTestId, badValidTestId} = require('./seed/seed');
-
-
-
-
+const { User } = require('./../models/user');
+const {todos, populateTodos, validTestId, badValidTestId, populateUsers, users} = require('./seed/seed');
 
 beforeEach(populateTodos);
+beforeEach(populateUsers);
+
+//todos
 
 describe("POST /todos", () => {
 
@@ -147,6 +147,76 @@ describe("DELETE /todos/:id", () => {
     request(app)
       .delete(`/todos/${badValidTestId}`)
       .expect(404)
+      .end(done)
+  });
+});
+
+//users
+
+describe('GET /users/me', () => {
+  it('should return user if authenticated', (done)=> {
+    request(app)
+      .get('/users/me')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect((res)=> {
+        expect(res.body._id).toBe(users[0]._id.toHexString());
+        expect(res.body.email).toBe(users[0].email);
+      })
+      .end(done);
+  });
+
+  it('should return 401 if not authenticated', (done)=> {
+    request(app)
+    .get('/users/me')
+    .expect(401)
+    .expect((res)=>{
+      expect(res.body.error).toBe("Authentication Required");
+    })
+    .end(done)
+  });
+});
+
+describe('POST /users', ()=>{
+  it('should create a user', (done)=>{
+    const email = 'example@example.com'
+    const password = 'password'
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect(res => {
+        expect(res.headers['x-auth']).toExist();
+        expect(res.body._id).toExist();
+        expect(res.body.email).toBe(email);
+      })
+      .end(err => {
+        if (err) return done(err)
+        User.findOne({email}).then(user => {
+          expect(user).toExist()
+          expect(user.password).toNotBe(password)
+          done();
+        });
+      });
+
+  });
+  it('should return validation error if invalid request', (done)=>{
+    const email = "safeemail@example.com"
+    const password = 'p'
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
+      .end(done)
+  });
+  it('should not create user if email in use', (done)=>{
+    const email = users[0].email
+    const password = 'password'
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
       .end(done)
   });
 });

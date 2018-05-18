@@ -76,7 +76,6 @@ UserSchema.pre('save', function (next){
   const user = this;
 
   if (user.isModified('password')){
-    console.log("fired hash function");
     bcryptjs.genSalt(10, (err, salt)=>{
       bcryptjs.hash(user.password, salt, (error, hash)=>{
         user.password = hash;
