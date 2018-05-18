@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { ObjectID } = require("mongodb");
 const _ = require('lodash');
+const bcryptjs = require('bcryptjs');
 
 const {mongoose} = require('./db/mongo');
 const {Todo} = require('./models/todo');
@@ -104,12 +105,13 @@ app.get('/users/me',authenticate, (req, res) => {
   res.send(req.user);
 });
 
-app.post('/users/login', authenticate, (req, res)=>{
+app.post('/users/login', (req, res)=>{
   let user = _.pick(req.body, ['email', 'password'])
-  User.findOne(user)
+  User.findByCredentials(user.email, user.password)
     .then(doc => {
-      if (!doc) return res.status(404).send({ error: "Object not found" })
-      return res.send(doc.tokens[0].token)
+      return doc.generateAuthToken().then(token =>{
+        res.header('x-auth', token).send(doc)
+      });
     })
     .catch(err => res.status(400).send({err}))
 });
