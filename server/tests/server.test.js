@@ -260,3 +260,25 @@ describe('POST /users/login', ()=> {
       .end(done)
   });
 });
+
+describe("DELETE /users/me/token", ()=>{
+  it("should log out the appropriate user", (done)=>{
+    const token = users[0].tokens[0].token
+    const userId = users[0]._id
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth',token)
+      .expect(200)
+      .end((err, res) => {
+        if (err){
+          return done(err);
+        }
+        User.findById(userId)
+          .then(user => {
+            expect(user.tokens.length).toBe(0);
+            done();
+          })
+          .catch(e => done(e));
+      })
+  })
+});
