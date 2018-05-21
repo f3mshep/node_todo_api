@@ -102,6 +102,7 @@ Create a new todo for current user. Requires a valid x-auth header.
 
 *example response*
 
+```json
 {
     "completed": false,
     "completedAt": null,
@@ -110,6 +111,7 @@ Create a new todo for current user. Requires a valid x-auth header.
     "_creator": "5aff158cf9399208f54cd7b3",
     "__v": 0
 }
+```
 ---
 
 
