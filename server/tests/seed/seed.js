@@ -10,12 +10,6 @@ const badValidTestId = "5afa1983aca2950c3963665b";
 const userOneId = new ObjectId()
 const userTwoId = new ObjectId()
 
-const todos = [
-  { text: "First test" },
-  { text: "Second test" },
-  { text: "Third test", _id: validTestId }
-];
-
 const users = [{
   _id: userOneId,
   email: firstEmail,
@@ -28,7 +22,17 @@ const users = [{
   _id: userTwoId,
   email: 'testing456@gmail.com',
   password: 'password',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({ _id: userTwoId, access: 'auth' }, 'abc123').toString()
+  }]
 }]
+
+const todos = [
+  { text: "First test", _creator: userOneId, _id: new ObjectId() },
+  { text: "Second test", _creator: userOneId },
+  { text: "Third test", _id: validTestId, _creator: userTwoId }
+];
 
 const populateTodos = (done) => {
   Todo.remove({}).then(() => {

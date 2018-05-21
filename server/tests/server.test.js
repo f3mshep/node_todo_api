@@ -12,12 +12,12 @@ beforeEach(populateUsers);
 //todos
 
 describe("POST /todos", () => {
-
+  const token = users[0].tokens[0].token;
   it('should create a new todo', done => {
-    const text = 'Todo test string'
-
+    const text = 'Todo test string';
     request(app)
       .post('/todos')
+      .set('x-auth', token)
       .send({text})
       .expect(200)
       .expect((res) => {
@@ -38,6 +38,7 @@ describe("POST /todos", () => {
 
     request(app)
       .post('/todos')
+      .set('x-auth', token)
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -52,30 +53,45 @@ describe("POST /todos", () => {
 });
 
 describe("GET /todos", ()=>{
+  const token = users[0].tokens[0].token;
   it('should get all todos', (done)=>{
     request(app)
       .get('/todos')
+      .set('x-auth',token)
       .expect(200)
       .expect(res => {
-        expect(res.body.todos.length).toBe(3)
+        expect(res.body.length).toBe(2)
       })
       .end(done)
   });
 });
 
 describe("GET /todos/:id", () => {
+  const token = users[0].tokens[0].token;
+  const todoId = todos[0]._id
+  console.log(todoId)
   it('should return the specified todo', (done)=> {
     request(app)
-      .get(`/todos/${validTestId}`)
+      .get(`/todos/${todoId}`)
+      .set('x-auth', token)
       .expect(200)
       .expect(res => {
-        expect(res.body.todo._id).toBe(validTestId);
+        expect(res.body.text).toBe(todos[0].text);
       })
+      .end(done);
+  });
+  it('should not return another user\'s todo', (done) => {
+    const unownedTodoId = todos[2]._id
+    request(app)
+      .get(`/todos/${unownedTodoId}`)
+      .set('x-auth', token)
+      .expect(404)
       .end(done);
   });
   it('should return an error if the ID is invalid', (done)=> {
     request(app)
       .get(`/todos/bad_id`)
+      .set('x-auth', token)
       .expect(400)
       .expect((res) =>{
         expect(res.body.error).toBe("Invalid Id");
@@ -85,6 +101,7 @@ describe("GET /todos/:id", () => {
   it('should return an error if the document cannot be found', (done)=> {
     request(app)
       .get(`/todos/${badValidTestId}`)
+      .set('x-auth', token)
       .expect(404)
       .expect((res)=> {
         expect(res.body.error).toBe("Object not found");
@@ -94,9 +111,12 @@ describe("GET /todos/:id", () => {
 });
 
 describe("PATCH /todos/:id", () => {
+  const userTwoToken = users[1].tokens[0].token
+
   it("should return the updated todo", (done)=>{
     request(app)
       .patch(`/todos/${validTestId}`)
+      .set('x-auth', userTwoToken)
       .send({ text: "updated third test", completed: true })
       .expect(200)
       .expect((res) => {
@@ -104,26 +124,36 @@ describe("PATCH /todos/:id", () => {
       })
       .end(done);
   });
+  it("should not update another user's todo", (done) => {
+    request(app)
+      .patch(`/todos/${todos[0]._id}`)
+      .set('x-auth', userTwoToken)
+      .send({ text: "updated third test", completed: true })
+      .expect(404)
+      .end(done);
+  });
   it("should not update prohibited fields", (done)=>{
     request(app)
       .patch(`/todos/${validTestId}`)
+      .set("x-auth", userTwoToken)
       .send({ text: "updated third test", _id: 123, completed: "haha" })
       .expect(200)
-      .expect((res) => {
-        Todo.findById(validTestId)
-          .then((todo) => {
+      .expect(res => {
+        Todo.findById(validTestId).then(todo => {
             expect(todo.completed).toBe(true);
             expect(todo._id).toBe(validTestId);
-          }, err => console.log(err))
+          }, err => console.log(err));
       })
       .end(done);
   });
 });
 
 describe("DELETE /todos/:id", () => {
+  const userTwoToken = users[1].tokens[0].token
   it("should delete the todo from the database and return doc", (done)=>{
     request(app)
       .delete(`/todos/${validTestId}`)
+      .set('x-auth', userTwoToken)
       .expect(200)
       .expect((res)=> {
         expect(res.body.todo._id).toBe(validTestId)
@@ -137,17 +167,26 @@ describe("DELETE /todos/:id", () => {
         }).catch(e => done(e));
       });
   });
+  it("should not delete another user's todo", (done) => {
+    request(app)
+      .delete(`/todos/${todos[0]._id}`)
+      .set('x-auth', userTwoToken)
+      .expect(404)
+      .end(done);
+  });
   it("should return a 400 if invalid ID", (done)=>{
     request(app)
       .delete(`/todos/bad_id`)
+      .set("x-auth", userTwoToken)
       .expect(400)
-      .end(done)
+      .end(done);
   });
   it("should return a 404 if the document is not found", (done)=>{
     request(app)
       .delete(`/todos/${badValidTestId}`)
+      .set("x-auth", userTwoToken)
       .expect(404)
-      .end(done)
+      .end(done);
   });
 });
 
@@ -237,7 +276,7 @@ describe('POST /users/login', ()=> {
 
         User.findById(users[1]._id)
           .then(user => {
-            expect(user.tokens[0]).toInclude({
+            expect(user.tokens[1]).toInclude({
               access: "auth",
               token: res.headers["x-auth"]
             });
