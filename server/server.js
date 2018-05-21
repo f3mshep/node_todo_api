@@ -16,6 +16,21 @@ PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+//static
+
+app.get('/', (req, res) => {
+  res
+    .status(200)
+    .send({
+      info: "Todo API by Alexandra Wright. Check out the github repo for API endpoints. First forray into the CRUD world with Express.",
+      github: "https://github.com/f3mshep/node_todo_api",
+      default_credentials: {
+        username: "user",
+        password: "password"
+      }
+    });
+});
+
 // Todos
 app.post('/todos', authenticate,  (req, res) => {
   let todo = new Todo({
