@@ -120,7 +120,7 @@ describe("PATCH /todos/:id", () => {
       .send({ text: "updated third test", completed: true })
       .expect(200)
       .expect((res) => {
-        expect(res.body.todo.text).toBe("updated third test");
+        expect(res.body.text).toBe("updated third test");
       })
       .end(done);
   });

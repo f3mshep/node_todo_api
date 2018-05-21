@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
       info: "Todo API by Alexandra Wright. Check out the github repo for API endpoints. First forray into the CRUD world with Express.",
       github: "https://github.com/f3mshep/node_todo_api",
       default_credentials: {
-        username: "user",
+        username: "user@fakemail.com",
         password: "password"
       }
     });
@@ -97,7 +97,7 @@ app.patch(`/todos/:id`, authenticate, (req, res) => {
     .then((todo)=>{
       if(!todo) return res.status(404).send({error: "Object not found"})
 
-      res.send({todo})
+      res.send(todo)
     })
     .catch((error)=>{
       return res.status(400).send({error})
@@ -132,7 +132,7 @@ app.post('/users/login', (req, res)=>{
         res.header('x-auth', token).send(doc)
       });
     })
-    .catch(err => res.status(400).send({err}))
+    .catch(err => res.status(400).send({error: "username or password not found"}))
 });
 
 app.delete('/users/me/token', authenticate, (req, res)=>{
