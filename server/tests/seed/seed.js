@@ -10,13 +10,15 @@ const badValidTestId = "5afa1983aca2950c3963665b";
 const userOneId = new ObjectId()
 const userTwoId = new ObjectId()
 
+SECRET = process.env.JWT_SECRET
+
 const users = [{
   _id: userOneId,
   email: firstEmail,
   password: "password",
   tokens:[{
     access: 'auth',
-    token: jwt.sign({_id: userOneId, access: 'auth'}, 'abc123').toString()
+    token: jwt.sign({_id: userOneId, access: 'auth'}, SECRET).toString()
   }]
 },{
   _id: userTwoId,
@@ -24,7 +26,7 @@ const users = [{
   password: 'password',
   tokens: [{
     access: 'auth',
-    token: jwt.sign({ _id: userTwoId, access: 'auth' }, 'abc123').toString()
+    token: jwt.sign({ _id: userTwoId, access: 'auth' }, SECRET).toString()
   }]
 }]
 

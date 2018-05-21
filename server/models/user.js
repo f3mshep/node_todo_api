@@ -5,7 +5,7 @@ const _ = require('lodash');
 const bcryptjs = require('bcryptjs');
 
 AUTH = 'auth'
-SALT = 'abc123'
+SALT = process.env.JWT_SECRET;
 
 const UserSchema = new mongoose.Schema({
     email: {
