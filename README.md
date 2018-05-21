@@ -5,14 +5,13 @@ I created this API in Express to learn about how to use a MongoDB database with 
 JWT authentication/authorization system. Here are the endpoints:
 
 ### Static
-
-**GET /**:
+**GET /**
 
 Returns JSON containting info and basic usage
 
 ---
 ### Users
-**POST /users **:
+**POST /users**
 
 Creates a new user. Requires a JSON body in the request that includes an email and a password. Returns JSON containing the new user
 and an x-auth header that contains a JWT used for authenication and authorization purposes.
@@ -21,8 +20,8 @@ and an x-auth header that contains a JWT used for authenication and authorizatio
 
 ```json
 {
-  email: "testing123@fmail.com",
-  password: "Correct Horse Battery Staple"
+  "email": "testing123@fmail.com",
+  "password": "Correct Horse Battery Staple"
 }
 ```
 *example response*
